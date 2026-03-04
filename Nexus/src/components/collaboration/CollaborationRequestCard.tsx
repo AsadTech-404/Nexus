@@ -1,17 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, X, MessageCircle } from 'lucide-react';
-import { CollaborationRequest } from '../../types';
+import { Check, X, MessageCircle, Loader2 } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import axios from 'axios';
+
 import { Card, CardBody, CardFooter } from '../ui/Card';
 import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
-import { findUserById } from '../../data/users';
-import { updateRequestStatus } from '../../data/collaborationRequests';
-import { formatDistanceToNow } from 'date-fns';
+
+// Setup axios instance
+const api = axios.create({
+  baseURL: 'http://localhost:8000/api',
+  withCredentials: true
+});
 
 interface CollaborationRequestCardProps {
-  request: CollaborationRequest;
+  request: any; // Using any for now to match MongoDB's populated structure
   onStatusUpdate?: (requestId: string, status: 'accepted' | 'rejected') => void;
 }
 
@@ -20,47 +25,43 @@ export const CollaborationRequestCard: React.FC<CollaborationRequestCardProps> =
   onStatusUpdate
 }) => {
   const navigate = useNavigate();
-  const investor = findUserById(request.investorId);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // In a real backend, 'investorId' is often populated into an object
+  const investor = request.investorId; 
   
   if (!investor) return null;
-  
-  const handleAccept = () => {
-    updateRequestStatus(request.id, 'accepted');
-    if (onStatusUpdate) {
-      onStatusUpdate(request.id, 'accepted');
+
+  const handleUpdateStatus = async (newStatus: 'accepted' | 'rejected') => {
+    try {
+      setIsUpdating(true);
+      // 1. Hit your real backend endpoint
+      const response = await api.patch(`/collab/${request.id}/update-status`, { 
+        status: newStatus 
+      });
+
+      if (response.data.success && onStatusUpdate) {
+        onStatusUpdate(request.id, newStatus);
+      }
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      alert("Could not update request status. Please try again.");
+    } finally {
+      setIsUpdating(false);
     }
   };
-  
-  const handleReject = () => {
-    updateRequestStatus(request.id, 'rejected');
-    if (onStatusUpdate) {
-      onStatusUpdate(request.id, 'rejected');
-    }
-  };
-  
-  const handleMessage = () => {
-    navigate(`/chat/${investor.id}`);
-  };
-  
-  const handleViewProfile = () => {
-    navigate(`/profile/investor/${investor.id}`);
-  };
-  
+
   const getStatusBadge = () => {
     switch (request.status) {
-      case 'pending':
-        return <Badge variant="warning">Pending</Badge>;
-      case 'accepted':
-        return <Badge variant="success">Accepted</Badge>;
-      case 'rejected':
-        return <Badge variant="error">Declined</Badge>;
-      default:
-        return null;
+      case 'pending': return <Badge variant="warning">Pending</Badge>;
+      case 'accepted': return <Badge variant="success">Accepted</Badge>;
+      case 'rejected': return <Badge variant="error">Declined</Badge>;
+      default: return null;
     }
   };
-  
+
   return (
-    <Card className="transition-all duration-300">
+    <Card className={`transition-all duration-300 ${isUpdating ? 'opacity-50 pointer-events-none' : ''}`}>
       <CardBody className="flex flex-col">
         <div className="flex justify-between items-start">
           <div className="flex items-start">
@@ -71,7 +72,6 @@ export const CollaborationRequestCard: React.FC<CollaborationRequestCardProps> =
               status={investor.isOnline ? 'online' : 'offline'}
               className="mr-3"
             />
-            
             <div>
               <h3 className="text-md font-semibold text-gray-900">{investor.name}</h3>
               <p className="text-sm text-gray-500">
@@ -79,8 +79,10 @@ export const CollaborationRequestCard: React.FC<CollaborationRequestCardProps> =
               </p>
             </div>
           </div>
-          
-          {getStatusBadge()}
+          <div className="flex flex-col items-end gap-2">
+            {getStatusBadge()}
+            {isUpdating && <Loader2 size={16} className="animate-spin text-primary-600" />}
+          </div>
         </div>
         
         <div className="mt-4">
@@ -89,56 +91,56 @@ export const CollaborationRequestCard: React.FC<CollaborationRequestCardProps> =
       </CardBody>
       
       <CardFooter className="border-t border-gray-100 bg-gray-50">
-        {request.status === 'pending' ? (
-          <div className="flex justify-between w-full">
-            <div className="space-x-2">
+        <div className="flex justify-between w-full">
+          {request.status === 'pending' ? (
+            <>
+              <div className="space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<X size={16} />}
+                  onClick={() => handleUpdateStatus('rejected')}
+                >
+                  Decline
+                </Button>
+                <Button
+                  variant="success"
+                  size="sm"
+                  leftIcon={<Check size={16} />}
+                  onClick={() => handleUpdateStatus('accepted')}
+                >
+                  Accept
+                </Button>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<MessageCircle size={16} />}
+                onClick={() => navigate(`/chat/${investor.id || investor._id}`)}
+              >
+                Message
+              </Button>
+            </>
+          ) : (
+            <>
               <Button
                 variant="outline"
                 size="sm"
-                leftIcon={<X size={16} />}
-                onClick={handleReject}
+                leftIcon={<MessageCircle size={16} />}
+                onClick={() => navigate(`/chat/${investor.id || investor._id}`)}
               >
-                Decline
+                Message
               </Button>
               <Button
-                variant="success"
+                variant="primary"
                 size="sm"
-                leftIcon={<Check size={16} />}
-                onClick={handleAccept}
+                onClick={() => navigate(`/profile/investor/${investor.id || investor._id}`)}
               >
-                Accept
+                View Profile
               </Button>
-            </div>
-            
-            <Button
-              variant="primary"
-              size="sm"
-              leftIcon={<MessageCircle size={16} />}
-              onClick={handleMessage}
-            >
-              Message
-            </Button>
-          </div>
-        ) : (
-          <div className="flex justify-between w-full">
-            <Button
-              variant="outline"
-              size="sm"
-              leftIcon={<MessageCircle size={16} />}
-              onClick={handleMessage}
-            >
-              Message
-            </Button>
-            
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleViewProfile}
-            >
-              View Profile
-            </Button>
-          </div>
-        )}
+            </>
+          )}
+        </div>
       </CardFooter>
     </Card>
   );

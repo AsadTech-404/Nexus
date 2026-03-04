@@ -20,8 +20,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const initAuth = async () => {
       try {
         const storedUser = localStorage.getItem(USER_STORAGE_KEY);
-        console.log('Initializing auth context...');
-        console.log('Stored user:', storedUser);
 
         if(storedUser) {
           const parsedUser: User = JSON.parse(storedUser);
