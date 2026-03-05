@@ -1,22 +1,61 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MessageCircle, Users, Calendar, Building2, MapPin, UserCircle, FileText, DollarSign, Send } from 'lucide-react';
+import { MessageCircle, Users, Calendar, Building2, MapPin, UserCircle, FileText, DollarSign, Send, CalendarDays } from 'lucide-react';
 import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { useAuth } from '../../context/AuthContext';
-import { findUserById } from '../../data/users';
-import { createCollaborationRequest, getRequestsFromInvestor } from '../../data/collaborationRequests';
-import { Entrepreneur } from '../../types';
+import { CollaborationRequest, Entrepreneur } from '../../types';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+
+// 1. Setup an Axios instance withCredentials if not already done globally
+const api = axios.create({
+  baseURL: "http://localhost:8000/api",
+  withCredentials: true,
+});
 
 export const EntrepreneurProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user: currentUser } = useAuth();
+  const [entrepreneur, setEntrepreneur ] = useState<Entrepreneur | null>(null);
+  const [collaborationRequests, setCollaborationRequests] = useState<CollaborationRequest[]>([]);
+  const [isMeetingModelOPen, setIsMeetingModelOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Fetch entrepreneur data
-  const entrepreneur = findUserById(id || '') as Entrepreneur | null;
-  
+  useEffect(() => {
+    const fetchEntrepreneur = async () => {
+      if(!id) return;
+      setIsLoading(true);
+      try {
+        const response = await api.get(`/user/${id}`);
+        setEntrepreneur(response.data.user);
+        
+        // If current user is an investor, check for collaboration requests
+        if(currentUser?.role === "investor") {
+          const request = await api.get("/collab/request");
+          setCollaborationRequests(request.data.request);
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to fetch entrepreneur data.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchEntrepreneur();
+  }, [id, currentUser]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+    
   if (!entrepreneur || entrepreneur.role !== 'entrepreneur') {
     return (
       <div className="text-center py-12">
@@ -31,25 +70,42 @@ export const EntrepreneurProfile: React.FC = () => {
   
   const isCurrentUser = currentUser?.id === entrepreneur.id;
   const isInvestor = currentUser?.role === 'investor';
+
+  const collaborationRequest = isInvestor && id ? collaborationRequests.find((req) => req.entrepreneurId === id && req.investorId === currentUser.id ) : null;
   
-  // Check if the current investor has already sent a request to this entrepreneur
-  const hasRequestedCollaboration = isInvestor && id 
-    ? getRequestsFromInvestor(currentUser.id).some(req => req.entrepreneurId === id)
-    : false;
   
-  const handleSendRequest = () => {
-    if (isInvestor && currentUser && id) {
-      createCollaborationRequest(
-        currentUser.id,
-        id,
-        `I'm interested in learning more about ${entrepreneur.startupName} and would like to explore potential investment opportunities.`
-      );
-      
-      // In a real app, we would refresh the data or update state
-      // For this demo, we'll force a page reload
-      window.location.reload();
+  const hasRequestedCollaboration = !!collaborationRequest;
+  const isCollaborationAccepted = collaborationRequest?.status === 'accepted';
+  
+  const handleSendRequest = async () => {
+    if(!isInvestor) {
+      toast.error("Investors can only send collaboration requests to entrepreneurs.");
+      return;
     }
-  };
+    if(!currentUser) {
+      toast.error("You must be logged in to send a collaboration request.");
+      return;
+    }
+    if(!id) {
+      toast.error("Invalid entrepreneur");
+      return;
+    }
+
+    try {
+      const loadingToast = toast.loading("Sending collaboration request...");
+      await api.post("/collab/new-request", { 
+        entrepreneurId: id,
+        message: `I'm interested in learning more about ${entrepreneur.startupName} and would like to explore potential investment opportunities.`
+      });
+      toast.success("Collaboration request sent successfully.", { id: loadingToast});
+
+      const request = await api.get("/collab/request")
+      setCollaborationRequests(request.data.request);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to send collaboration request.");
+    }
+  }
   
   return (
     <div className="space-y-6 animate-fade-in">
@@ -102,14 +158,31 @@ export const EntrepreneurProfile: React.FC = () => {
                   </Button>
                 </Link>
                 
-                {isInvestor && (
-                  <Button
-                    leftIcon={<Send size={18} />}
-                    disabled={hasRequestedCollaboration}
-                    onClick={handleSendRequest}
-                  >
-                    {hasRequestedCollaboration ? 'Request Sent' : 'Request Collaboration'}
-                  </Button>
+{isInvestor && (
+                  <>
+                    <Button
+                      variant="outline"
+                      leftIcon={<CalendarDays size={18} />}
+                      onClick={() => setIsMeetingModelOpen(true)}
+                      disabled={!isCollaborationAccepted}
+                      title={
+                        !isCollaborationAccepted
+                          ? "Collaboration must be accepted to schedule a meeting"
+                          : ""
+                      }
+                    >
+                      Schedule Meeting
+                    </Button>
+                    <Button
+                      leftIcon={<Send size={18} />}
+                      disabled={hasRequestedCollaboration}
+                      onClick={handleSendRequest}
+                    >
+                      {hasRequestedCollaboration
+                        ? "Request Sent"
+                        : "Request Collaboration"}
+                    </Button>
+                  </>
                 )}
               </>
             )}

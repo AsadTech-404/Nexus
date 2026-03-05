@@ -6,6 +6,7 @@ import collabRoute from "./routes/collab.route.js";
 import dashboardRoute from "./routes/dashboard.route.js";
 import cors from "cors";
 import documentRoute from "./routes/document.route.js";
+import notificationRoute from "./routes/notification.route.js";
 
 const app = express();
 
@@ -25,5 +26,6 @@ app.use("/api/user", userRoute);
 app.use("/api/collab", collabRoute);
 app.use("/api/dashboard", dashboardRoute);
 app.use("/api/document", documentRoute);
+app.use("/api/notification", notificationRoute);
 
 export default app
