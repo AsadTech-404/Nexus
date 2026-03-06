@@ -10,10 +10,10 @@ const notifictionSchema = new mongoose.Schema({
         type: String,
         enum: [
             "message",
-            "collaboration_request",
-            "collaboration_accepted",
-            "meeting_scheduled",
-            "meeting_status"
+            "collaboration-request",
+            "collaboration-accepted",
+            "meeting-scheduled",
+            "meeting-status"
         ],
         required: true
     },

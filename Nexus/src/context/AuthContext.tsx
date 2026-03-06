@@ -41,7 +41,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             logout();
           }
         } else {
-          console.log('No user found in local storage');
           setUser(null);
         }
       } catch (error) {

@@ -68,6 +68,30 @@ export interface Document {
   ownerId: string;
 }
 
+export interface Meeting {
+  id: string;
+  title: string;
+  description?: string;
+  investorId: string;
+  entrepreneurId: string;
+  scheduledTime: string;
+  endTime: string;
+  status: "pending" | "accepted" | "declined" | "cancelled";
+  location?: string;
+  createdAt: string;
+}
+
+export interface Notification {
+  id: string,
+  userId: string,
+  type: "messae" | "collaboration-request" | "collaboration-accepted" | "collaboration-rejected" | "meeting-scheduled" | "meeting-status";
+  title: string;
+  message: string;
+  link: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
 export interface AuthContextType {
   user: User | null;
   login: (email: string, password: string, role: UserRole) => Promise<void>;

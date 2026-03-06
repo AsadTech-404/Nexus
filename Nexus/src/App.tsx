@@ -29,6 +29,7 @@ import { DealsPage } from './pages/deals/DealsPage';
 // Chat Pages
 import { ChatPage } from './pages/chat/ChatPage';
 import { Toaster } from 'react-hot-toast';
+import MeetingsPage from './pages/meeting/MeetingsPage';
 
 function App() {
   return (
@@ -63,6 +64,10 @@ function App() {
           
           <Route path="/messages" element={<DashboardLayout />}>
             <Route index element={<MessagesPage />} />
+          </Route>
+
+          <Route path='/meetings' element={<DashboardLayout />}>
+            <Route index element={<MeetingsPage />}/>
           </Route>
           
           <Route path="/notifications" element={<DashboardLayout />}>

@@ -7,6 +7,7 @@ import { Card, CardBody, CardHeader } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { useAuth } from '../../context/AuthContext';
 import { CollaborationRequest, Entrepreneur } from '../../types';
+import { ScheduleMeetingModal } from '../../components/meeting/scheduleMeetingModel';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -173,6 +174,16 @@ export const EntrepreneurProfile: React.FC = () => {
                     >
                       Schedule Meeting
                     </Button>
+                    {
+                      isMeetingModelOPen && (
+                        <ScheduleMeetingModal
+                          isOpen={isMeetingModelOPen}
+                          onClose={() => setIsMeetingModelOpen(false)}
+                          entrepreneurId={entrepreneur.id}
+                          currentUserId={currentUser.id}
+                        />
+                      )
+                    }
                     <Button
                       leftIcon={<Send size={18} />}
                       disabled={hasRequestedCollaboration}

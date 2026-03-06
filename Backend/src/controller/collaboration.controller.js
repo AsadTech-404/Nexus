@@ -61,7 +61,7 @@ export const createCollaborationRequest = async (req, res) => {
         const notification = new Notification({
             id: new mongoose.Types.ObjectId(),
             userId: entrepreneurId,
-            type: "collaboration_request",
+            type: "collaboration-request",
             title: `You have a new collaboration request`,
             message: `Sent you a request from ${req.user.name}`,
             link: '/dashboard/entrepreneur',
@@ -103,7 +103,7 @@ export const updateCollaborationRequestStatus = async (req, res) => {
         const notification = new Notification({
             id: new mongoose.Types.ObjectId(),
             userId: targetUserId,
-            type: status === "accepted" ? "collaboration_accepted" : "collaboration_rejected",
+            type: status === "accepted" ? "collaboration-accepted" : "collaboration-rejected",
             title: `Your collaboration request has been ${status}`,
             message: `${req.user.name} has ${status} your collaboration request.`,
             link: 
