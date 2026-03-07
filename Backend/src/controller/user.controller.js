@@ -56,38 +56,56 @@ export const searchUsers = async (req, res) => {
     }
 };
 
+// Get entrepreneurs
+export const getEntrepreneurs = async (req, res) => {
+    try {
+        const entrepreneur = await User.find({ role: "entrepreneur" }).select("-password -__v");
+        return res.status(200).json({ success: true, users: entrepreneur || [] });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}
+
+// Get investor
+export const getInvestor = async (req, res) => {
+    try {
+        const investor = await User.find({ role: "investor" }).select("-password -__v");
+        return res.status(200).json({ success: true, users: investor || [] });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}
+
 // Get connected users (accepted collaborations)
 export const getConnectedUsers = async (req, res) => {
     try {
-        const { id } = req.user; // Assuming req.user is populated by your auth middleware
+        const id = req.user._id; 
 
-        // Find all accepted collaboration requests where the current user is either the investor or entrepreneur
         const acceptedRequests = await CollaborationRequest.find({
             status: "accepted",
-            $or: [
-                { investorId: id },
-                { entrepreneurId: id },
-            ],
-            
-        }) 
-
-        // Accepted requests count
-        const acceptedCount = acceptedRequests.length;
-
-        // Extract the IDs of connected users from the accepted collaboration requests
-        const connectedUserIds = acceptedRequests.map(request => {
-             request.investorId === id ? request.entrepreneurId : request.investorId;
+            $or: [{ investorId: id }, { entrepreneurId: id }],
         });
 
-        // Unique connected user IDs (in case of multiple collaborations with the same user)
-        const uniqueConnectedUserIds = [...new Set(connectedUserIds)];
+        // FIX: Added 'return' inside the map function
+        const connectedUserIds = acceptedRequests.map(request => {
+            return request.investorId.toString() === id.toString() 
+                ? request.entrepreneurId 
+                : request.investorId;
+        });
 
-        // Fetch the connected users details using the extracted IDs
-        const connectedUsers = await User.find({ _id: { $in: connectedUserIds } })
+        const uniqueConnectedUserIds = [...new Set(connectedUserIds.map(id => id.toString()))];
+
+        const connectedUsers = await User.find({ _id: { $in: uniqueConnectedUserIds } })
             .select("name email avatarUrl role startupName industry") 
             .lean();
 
-        return res.status(200).json({ success: true, connectedUsers, acceptedCount, totalConnections: uniqueConnectedUserIds.length });
+        return res.status(200).json({ 
+            success: true, 
+            connectedUsers, 
+            totalConnections: uniqueConnectedUserIds.length 
+        });
     } catch (error) {
         console.error("Error fetching connected users:", error);
         return res.status(500).json({ success: false, message: "Internal server error" });

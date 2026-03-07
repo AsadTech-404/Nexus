@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MessageCircle, Building2, MapPin, UserCircle, BarChart3, Briefcase } from 'lucide-react';
 import { Avatar } from '../../components/ui/Avatar';
@@ -6,15 +6,47 @@ import { Button } from '../../components/ui/Button';
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { useAuth } from '../../context/AuthContext';
-import { findUserById } from '../../data/users';
 import { Investor } from '../../types';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+
+// 1. Setup an Axios instance withCredentials if not already done globally
+const api = axios.create({
+  baseURL: "http://localhost:8000/api",
+  withCredentials: true,
+});
 
 export const InvestorProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user: currentUser } = useAuth();
+  const [investor, setInvestor] = useState<Investor | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Fetch investor data
-  const investor = findUserById(id || '') as Investor | null;
+  useEffect(() => {
+    const fetchInvestor = async () => {
+      if(!id) return;
+      setIsLoading(true);
+      try {
+        const response = await api.get(`/user/${id}`);
+        setInvestor(response.data.user);
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to fetch investor data.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchInvestor();
+  }, [id, currentUser]);
+
+    if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
   
   if (!investor || investor.role !== 'investor') {
     return (

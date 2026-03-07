@@ -59,7 +59,7 @@ export const EntrepreneurDashboard: React.FC = () => {
         if (investorsResult.status === 'fulfilled' && investorsResult.value.data.success) {
   const rawData = investorsResult.value.data.users || investorsResult.value.data.data;
   
-  // 🚀 Translate backend schema fields to frontend interface fields
+  // Translate backend schema fields to frontend interface fields
   const formattedInvestors = rawData
     .filter((u: any) => u.role === 'investor' && u.id !== user?.id)
     .map((inv: any) => ({

@@ -37,7 +37,7 @@ export const EntrepreneurProfile: React.FC = () => {
         // If current user is an investor, check for collaboration requests
         if(currentUser?.role === "investor") {
           const request = await api.get("/collab/request");
-          setCollaborationRequests(request.data.request);
+          setCollaborationRequests(request.data?.request || []);
         }
       } catch (error) {
         console.error(error);
@@ -72,8 +72,10 @@ export const EntrepreneurProfile: React.FC = () => {
   const isCurrentUser = currentUser?.id === entrepreneur.id;
   const isInvestor = currentUser?.role === 'investor';
 
-  const collaborationRequest = isInvestor && id ? collaborationRequests.find((req) => req.entrepreneurId === id && req.investorId === currentUser.id ) : null;
-  
+
+  const collaborationRequest = isInvestor && id 
+  ? (collaborationRequests || []).find((req) => req.entrepreneurId === id && req.investorId === currentUser.id) 
+  : null;  
   
   const hasRequestedCollaboration = !!collaborationRequest;
   const isCollaborationAccepted = collaborationRequest?.status === 'accepted';
@@ -233,7 +235,7 @@ export const EntrepreneurProfile: React.FC = () => {
                 <div>
                   <h3 className="text-md font-medium text-gray-900">Problem Statement</h3>
                   <p className="text-gray-700 mt-1">
-                    {entrepreneur?.pitchSummary?.split('.')[0]}.
+                    {entrepreneur?.pitchSummary?.split('.')[0] || "No pitch summary available."}.
                   </p>
                 </div>
                 
