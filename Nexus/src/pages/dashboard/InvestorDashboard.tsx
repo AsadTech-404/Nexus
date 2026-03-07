@@ -7,6 +7,7 @@ import {
   Search,
   PlusCircle,
   Loader2,
+  Calendar,
 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { Card, CardBody, CardHeader } from "../../components/ui/Card";
@@ -202,21 +203,18 @@ export const InvestorDashboard: React.FC = () => {
           </CardBody>
         </Card>
         {/* 3. Upcoming Meetings */}
-        <Card className="bg-green-50 border border-green-100">
-          <CardBody>
-            <div className="flex items-center">
-              <div className="p-3 bg-green-100 rounded-full mr-4">
-                <PieChart size={20} className="text-green-700" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-green-700">
-                  Upcoming Meetings
-                </p>
-                {/* Use backend stat: upcomingMeetingsCount */}
-                <h3 className="text-xl font-semibold text-green-900">
-                  {stats?.upcomingMeetingsCount || 0}
-                </h3>
-              </div>
+        <Card className="bg-accent-50 border-accent-100">
+          <CardBody className="flex items-center">
+            <div className="p-3 bg-accent-100 rounded-full mr-4">
+              <Calendar size={20} className="text-accent-700" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-accent-700">
+                Upcoming Meetings
+              </p>
+              <h3 className="text-xl font-semibold text-accent-900">
+                {stats?.upcomingMeetingsCount || 0}
+              </h3>
             </div>
           </CardBody>
         </Card>

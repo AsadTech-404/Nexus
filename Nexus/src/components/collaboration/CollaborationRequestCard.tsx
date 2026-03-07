@@ -28,7 +28,7 @@ export const CollaborationRequestCard: React.FC<CollaborationRequestCardProps> =
   const [isUpdating, setIsUpdating] = useState(false);
 
   // In a real backend, 'investorId' is often populated into an object
-  const investor = request.investorId; 
+  const investor = request.otherUser;
   
   if (!investor) return null;
 
@@ -36,12 +36,12 @@ export const CollaborationRequestCard: React.FC<CollaborationRequestCardProps> =
     try {
       setIsUpdating(true);
       // 1. Hit your real backend endpoint
-      const response = await api.patch(`/collab/${request.id}/update-status`, { 
+      const response = await api.patch(`/collab/${request._id}/update-status`, { 
         status: newStatus 
       });
 
       if (response.data.success && onStatusUpdate) {
-        onStatusUpdate(request.id, newStatus);
+        onStatusUpdate(request._id, newStatus);
       }
     } catch (error) {
       console.error("Failed to update status:", error);

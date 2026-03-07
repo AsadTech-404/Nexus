@@ -37,7 +37,7 @@ export const EntrepreneurProfile: React.FC = () => {
         // If current user is an investor, check for collaboration requests
         if(currentUser?.role === "investor") {
           const request = await api.get("/collab/request");
-          setCollaborationRequests(request.data?.request || []);
+          setCollaborationRequests(request.data?.collaborations || []);
         }
       } catch (error) {
         console.error(error);
@@ -97,13 +97,14 @@ export const EntrepreneurProfile: React.FC = () => {
     try {
       const loadingToast = toast.loading("Sending collaboration request...");
       await api.post("/collab/new-request", { 
+        investorId: currentUser.id,
         entrepreneurId: id,
-        message: `I'm interested in learning more about ${entrepreneur.startupName} and would like to explore potential investment opportunities.`
+        message: `I'm interested in learning more about ${entrepreneur.startupName || "your startup"} and would like to explore potential investment opportunities.`
       });
       toast.success("Collaboration request sent successfully.", { id: loadingToast});
 
       const request = await api.get("/collab/request")
-      setCollaborationRequests(request.data.request);
+      setCollaborationRequests(request.data?.collaborations || []);
     } catch (error) {
       console.error(error);
       toast.error("Failed to send collaboration request.");

@@ -16,6 +16,8 @@ import { Button } from "../../components/ui/Button";
 import { Card, CardBody, CardHeader } from "../../components/ui/Card";
 import { Badge } from "../../components/ui/Badge";
 import { InvestorCard } from "../../components/investor/InvestorCard";
+import { CollaborationRequestCard } from "../../components/collaboration/CollaborationRequestCard";
+import toast from "react-hot-toast";
 
 // 1. Setup an Axios instance withCredentials if not already done globally
 const api = axios.create({
@@ -29,6 +31,7 @@ export const EntrepreneurDashboard: React.FC = () => {
   // 2. State management for backend data
   const [stats, setStats] = useState<any>(null);
   const [recommendedInvestors, setRecommendedInvestors] = useState<any[]>([]);
+  const [collaborationRequests, setCollaborationRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,60 +39,27 @@ export const EntrepreneurDashboard: React.FC = () => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        setError(null);
+        // 1. Fetch Stats from the controller you just built
+        const statsRes = await api.get("/dashboard/summary");
+        setStats(statsRes.data.stats);
 
-        // Change to allSettled so one 404 doesn't kill the whole page
-        const [summaryResult, investorsResult] = await Promise.allSettled([
-          api.get("/dashboard/summary"),
-          api.get("/user/search?query="),
-        ]);
+        // 2. Fetch Recommended Investors (Milestone 2/3)
+        const investorsRes = await api.get("/user/investors");
+        setRecommendedInvestors(investorsRes.data?.users || []);
 
-        // 1. Process Summary
-        if (
-          summaryResult.status === "fulfilled" &&
-          summaryResult.value.data.success
-        ) {
-          setStats(summaryResult.value.data.stats);
-        } else if (summaryResult.status === "rejected") {
-          console.error("Summary load failed:", summaryResult.reason);
-          // Optional: Set a specific error for the stats section
-        }
-
-        // 2. Process Investors
-        if (investorsResult.status === 'fulfilled' && investorsResult.value.data.success) {
-  const rawData = investorsResult.value.data.users || investorsResult.value.data.data;
-  
-  // Translate backend schema fields to frontend interface fields
-  const formattedInvestors = rawData
-    .filter((u: any) => u.role === 'investor' && u.id !== user?.id)
-    .map((inv: any) => ({
-      ...inv,
-      // Map the MongoDB arrays to the React expectations and provide fallbacks
-      industries: inv.investmentInterests || [],
-      specialties: inv.investmentStage || [],
-      portfolio: inv.portfolioCompanies || []
-    }))
-    .slice(0, 3);
-
-  setRecommendedInvestors(formattedInvestors);
-}
-
-        // 3. Only show the big red error if BOTH fail
-        if (
-          summaryResult.status === "rejected" &&
-          investorsResult.status === "rejected"
-        ) {
-          setError("Unable to reach the server. Please try again later.");
-        }
-      } catch (err: any) {
-        setError("An unexpected error occurred.");
+        // 3. Fetch Collaboration Requests (Milestone 3)
+        const requestsRes = await api.get("/collab/request");
+        setCollaborationRequests(requestsRes.data?.collaborations || []);
+      } catch (error) {
+        console.error(error);
+        setError("Failed to load dashboard data");
       } finally {
         setLoading(false);
       }
     };
 
     if (user) fetchDashboardData();
-  }, [user, user?.id]);
+  },[user]);
 
   // Loading state UI
   if (loading) {
@@ -106,6 +76,24 @@ export const EntrepreneurDashboard: React.FC = () => {
         <AlertCircle className="mr-2" /> {error}
       </div>
     );
+  }
+
+  const pendingRequests = collaborationRequests.filter(
+    (request) => request.status === "pending",
+  );
+
+  const handleRequestStatusUpdate = async (requestId: string, status: string) => {
+    try {
+      await api.put(`/collab/${requestId}/update-status`, { status });
+      setCollaborationRequests((prevRequests) =>
+        prevRequests.map((request) =>
+          request._id === requestId ? { ...request, status } : request,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update request status");
+    }
   }
 
   return (
@@ -227,8 +215,40 @@ export const EntrepreneurDashboard: React.FC = () => {
               )}
             </CardBody>
           </Card>
-        </div>
+           <Card>
+            <CardHeader className="flex justify-between items-center">
+              <h2 className="text-lg font-medium text-gray-900">
+                Collaboration Requests
+              </h2>
+              <Badge variant="primary">{pendingRequests.length} pending</Badge>
+            </CardHeader>
 
+            <CardBody>
+              {collaborationRequests.length > 0 ? (
+                <div className="space-y-4">
+                  {collaborationRequests.map((request) => (
+                    <CollaborationRequestCard
+                      key={request._id}
+                      request={request}
+                      onStatusUpdate={handleRequestStatusUpdate}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                    <AlertCircle size={24} className="text-gray-500" />
+                  </div>
+                  <p className="text-gray-600">No collaboration requests yet</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    When investors are interested in your startup, their
+                    requests will appear here
+                  </p>
+                </div>
+              )}
+            </CardBody>
+          </Card>
+        </div>
         <div className="space-y-4">
           <Card>
             <CardHeader className="flex justify-between items-center">

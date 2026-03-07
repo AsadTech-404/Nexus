@@ -1,5 +1,5 @@
 import express from "express";
-import { getConnectedUsers, getEntrepreneurs, getUserProfile, profile, searchUsers, updateProfile } from "../controller/user.controller.js";
+import { getConnectedUsers, getEntrepreneurs, getInvestor, getUserProfile, profile, searchUsers, updateProfile } from "../controller/user.controller.js";
 import { authenticate } from "../middleware/auth.middleware.js";
 
 const userRoute = express.Router();
@@ -11,6 +11,7 @@ userRoute.get("/", (req, res) => {
 
 userRoute.get('/profile', authenticate, profile);
 userRoute.get('/entrepreneurs', authenticate, getEntrepreneurs);
+userRoute.get('/investors', authenticate, getInvestor);
 userRoute.get('/search', authenticate, searchUsers);
 userRoute.get('/connected-users', authenticate, getConnectedUsers);
 userRoute.get('/:id', authenticate, getUserProfile);

@@ -28,7 +28,7 @@ export const InvestorCard: React.FC<InvestorCardProps> = ({
     if (investor?.id) navigate(`/chat/${investor.id}`);
   };
   
-  // 🚀 Safe Data Extraction: Defaults to empty arrays if undefined
+  // Safe Data Extraction: Defaults to empty arrays if undefined
   const investmentStages = investor?.investmentStage || [];
   const investmentInterests = investor?.investmentInterests || [];
   
