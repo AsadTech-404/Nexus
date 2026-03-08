@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { ChatConversation } from '../../types';
@@ -17,7 +16,8 @@ export const ChatUserList: React.FC<ChatUserListProps> = ({ conversations }) => 
   const { user: currentUser } = useAuth();
   
   if (!currentUser) return null;
-  
+
+
   const handleSelectUser = (userId: string) => {
     navigate(`/chat/${userId}`);
   };

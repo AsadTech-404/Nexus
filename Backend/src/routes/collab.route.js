@@ -12,6 +12,6 @@ collabRoute.get("/", (req, res) => {
 
 collabRoute.get('/request', authenticate, getRequest);
 collabRoute.post('/new-request', authenticate, collaborationRequestValidationRules, validateRequest, createCollaborationRequest);
-collabRoute.put('/:id/update-status', authenticate, updateCollaborationRequestStatus);
+collabRoute.patch('/:requestId/update-status', authenticate, updateCollaborationRequestStatus);
 
 export default collabRoute;

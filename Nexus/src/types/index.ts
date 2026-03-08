@@ -45,6 +45,15 @@ export interface ChatConversation {
   id: string;
   participants: string[];
   lastMessage?: Message;
+  otherUser?: {
+    id: string;
+    name: string;
+    avatarUrl: string;
+    isOnline: boolean;
+  };
+  lastMessageDate?: string;
+  unreadMessagesCount: number;
+  createdAt: string;
   updatedAt: string;
 }
 

@@ -1,5 +1,6 @@
 import Document from "../models/document.model.js";
-import { uploadFile } from "../storage.service.js";
+import { uploadFile } from "../services/storage.service.js";
+
 
 // Upload document
 export const uploadDocument = async (req, res) => {
