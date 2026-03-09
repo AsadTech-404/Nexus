@@ -1,16 +1,47 @@
-import React, { useState } from 'react';
-import { Search, Filter, MapPin } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Search, Filter, MapPin, Loader2 } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { InvestorCard } from '../../components/investor/InvestorCard';
-import { investors } from '../../data/users';
+import { Investor } from '../../types';
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: 'http://localhost:8000/api',
+  withCredentials: true
+});
 
 export const InvestorsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStages, setSelectedStages] = useState<string[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-  
+  const [investors, setInvestors] = useState<Investor[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch investors
+  useEffect(() => {
+    const fetchInvestors = async () => {
+      try {
+        const res = await api.get('/investor/investors');
+        setInvestors(res.data.investors);
+      } catch (error) {
+        console.error('Error fetching investors:', error);
+      } finally {
+        setLoading(false);     
+      }
+    }
+    fetchInvestors();
+  },[]);
+
+  if (loading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="animate-spin text-primary-600" size={48} />
+      </div>
+    );
+  }
+ 
   // Get unique investment stages and interests
   const allStages = Array.from(new Set(investors.flatMap(i => i.investmentStage)));
   const allInterests = Array.from(new Set(investors.flatMap(i => i.investmentInterests)));

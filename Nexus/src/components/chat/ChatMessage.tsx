@@ -1,15 +1,18 @@
 import { formatDistanceToNow } from 'date-fns';
 import { Message } from '../../types';
 import { Avatar } from '../ui/Avatar';
-import { findUserById } from '../../data/users';
 
 interface ChatMessageProps {
   message: Message;
   isCurrentUser: boolean;
+  user: {
+    name: string;
+    avatarUrl: string;
+  }
 }
 
-export const ChatMessage = ({ message, isCurrentUser }: ChatMessageProps) => {
-  const user = findUserById(message.senderId);
+export const ChatMessage = ({ message, isCurrentUser, user}: ChatMessageProps) => {
+ 
 
   if (!user) return null;
   

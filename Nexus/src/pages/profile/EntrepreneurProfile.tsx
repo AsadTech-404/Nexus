@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { MessageCircle, Users, Calendar, Building2, MapPin, UserCircle, FileText, DollarSign, Send, CalendarDays } from 'lucide-react';
 import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
@@ -24,6 +24,7 @@ export const EntrepreneurProfile: React.FC = () => {
   const [collaborationRequests, setCollaborationRequests] = useState<CollaborationRequest[]>([]);
   const [isMeetingModelOPen, setIsMeetingModelOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
   
   // Fetch entrepreneur data
   useEffect(() => {
@@ -205,6 +206,7 @@ export const EntrepreneurProfile: React.FC = () => {
               <Button
                 variant="outline"
                 leftIcon={<UserCircle size={18} />}
+                onClick={() => navigate(`/settings`)}
               >
                 Edit Profile
               </Button>

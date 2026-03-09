@@ -1,13 +1,12 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { ChatConversation } from '../../types';
 import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
-import { findUserById } from '../../data/users';
 import { useAuth } from '../../context/AuthContext';
+import { ChatConversation } from '../../types';
 
 interface ChatUserListProps {
-  conversations: ChatConversation[];
+  conversations: ChatConversation[]; 
 }
 
 export const ChatUserList: React.FC<ChatUserListProps> = ({ conversations }) => {
@@ -17,10 +16,10 @@ export const ChatUserList: React.FC<ChatUserListProps> = ({ conversations }) => 
   
   if (!currentUser) return null;
 
+const handleSelectUser = (userId: string) => {
+  navigate(`/chat/${userId}`);
+};
 
-  const handleSelectUser = (userId: string) => {
-    navigate(`/chat/${userId}`);
-  };
 
   return (
     <div className="bg-white border-r border-gray-200 w-full md:w-64 overflow-y-auto">
@@ -30,15 +29,11 @@ export const ChatUserList: React.FC<ChatUserListProps> = ({ conversations }) => 
         <div className="space-y-1">
           {conversations.length > 0 ? (
             conversations.map(conversation => {
-              // Get the other participant (not the current user)
-              const otherParticipantId = conversation.participants.find(id => id !== currentUser.id);
-              if (!otherParticipantId) return null;
-              
-              const otherUser = findUserById(otherParticipantId);
+              // 🚀 Use the 'otherUser' object directly from your API response
+              const { otherUser, lastMessage } = conversation;
               if (!otherUser) return null;
               
-              const lastMessage = conversation.lastMessage;
-              const isActive = activeUserId === otherParticipantId;
+              const isActive = activeUserId === otherUser.id;
               
               return (
                 <div
