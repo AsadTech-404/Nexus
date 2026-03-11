@@ -184,7 +184,7 @@ export const EntrepreneurProfile: React.FC = () => {
                           isOpen={isMeetingModelOPen}
                           onClose={() => setIsMeetingModelOpen(false)}
                           entrepreneurId={entrepreneur.id}
-                          currentUserId={currentUser.id}
+                          investorId={currentUser.id}
                         />
                       )
                     }

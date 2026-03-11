@@ -161,9 +161,7 @@ export const InvestorDashboard: React.FC = () => {
       </div>
 
       {/* Stats summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {" "}
-        {/* Changed to 4 columns to show more data */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* 1. Total Startups on Platform */}
         <Card className="bg-primary-50 border border-primary-100">
           <CardBody>
@@ -173,13 +171,29 @@ export const InvestorDashboard: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm font-medium text-primary-700">
-                  Platform Startups
+                  Total Startups
                 </p>
                 {/* Use backend stat: platformStartups */}
                 <h3 className="text-xl font-semibold text-primary-900">
                   {stats?.platformStartups || 0}
                 </h3>
               </div>
+            </div>
+          </CardBody>
+        </Card>
+        {/* 3. Industries */}
+        <Card className="bg-accent-50 border-accent-100">
+          <CardBody className="flex items-center">
+            <div className="p-3 bg-emerald-100 rounded-full mr-4">
+              <PieChart size={20} className="text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-emerald-800/80">
+                Industries
+              </p>
+              <h3 className="text-xl font-semibold text-accent-900">
+                {stats?.industries || 0}
+              </h3>
             </div>
           </CardBody>
         </Card>
@@ -197,41 +211,6 @@ export const InvestorDashboard: React.FC = () => {
                 {/* Use backend stat: totalConnections */}
                 <h3 className="text-xl font-semibold text-accent-900">
                   {stats?.totalConnections || 0}
-                </h3>
-              </div>
-            </div>
-          </CardBody>
-        </Card>
-        {/* 3. Upcoming Meetings */}
-        <Card className="bg-accent-50 border-accent-100">
-          <CardBody className="flex items-center">
-            <div className="p-3 bg-accent-100 rounded-full mr-4">
-              <Calendar size={20} className="text-accent-700" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-accent-700">
-                Upcoming Meetings
-              </p>
-              <h3 className="text-xl font-semibold text-accent-900">
-                {stats?.upcomingMeetingsCount || 0}
-              </h3>
-            </div>
-          </CardBody>
-        </Card>
-        {/* 4. Pending Requests */}
-        <Card className="bg-yellow-50 border border-yellow-100">
-          <CardBody>
-            <div className="flex items-center">
-              <div className="p-3 bg-yellow-100 rounded-full mr-4">
-                <Filter size={20} className="text-yellow-700" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-yellow-700">
-                  Pending Requests
-                </p>
-                {/* Use backend stat: pendingRequests */}
-                <h3 className="text-xl font-semibold text-yellow-900">
-                  {stats?.pendingRequests || 0}
                 </h3>
               </div>
             </div>

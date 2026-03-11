@@ -49,7 +49,8 @@ export default function MeetingsPage() {
       <ScheduleMeetingModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        currentUserId={currentId}
+        entrepreneurId={currentId}
+        investorId={currentId}
       />
       
       {/* Quick Status Legend */}

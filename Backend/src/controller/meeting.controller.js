@@ -37,9 +37,9 @@ export const scheduleMeeting = async (req, res) => {
       location,
     } = req.body;
 
-    const currUserId = req.user.id;
+    const currUserId = req.user._id.toString();
 
-    if (currUserId !== entrepreneurId && currUserId !== investorId) {
+    if (currUserId !== String(investorId) && currUserId !== String(entrepreneurId)) {
       return res
         .status(403)
         .json({ success: false, message: "Unauthorized participant" });

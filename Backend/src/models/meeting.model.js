@@ -29,6 +29,9 @@ const meetingSchema = new mongoose.Schema({
     location: {
         type: String,
     },
+    meetingLink: {
+        type: String,
+    },
     status: {
         type: String,
         enum: ["pending", "accepted", "declined", "cancelled"],

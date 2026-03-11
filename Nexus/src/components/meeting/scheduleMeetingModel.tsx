@@ -9,13 +9,12 @@ import axios from 'axios';
 interface ScheduleMeetingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  investorId?: string; // If entrepreneur is booking
-  entrepreneurId?: string; // If investor is booking
-  currentUserId: string;
+  investorId?: string; 
+  entrepreneurId?: string;
 }
 
 export const ScheduleMeetingModal: React.FC<ScheduleMeetingModalProps> = ({ 
-  isOpen, onClose, investorId, entrepreneurId, currentUserId 
+  isOpen, onClose, investorId, entrepreneurId 
 }) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -41,11 +40,10 @@ export const ScheduleMeetingModal: React.FC<ScheduleMeetingModalProps> = ({
         endTime: formData.endTime.toISOString(),
         investorId,
         entrepreneurId,
-        currentUserId
       }, { withCredentials: true });
 
       if (res.data.success) {
-        toast.success("Meeting scheduled! Check your notifications.");
+        toast.success("Meeting scheduled successfully.");
         onClose();
       }
     } catch (err: any) {

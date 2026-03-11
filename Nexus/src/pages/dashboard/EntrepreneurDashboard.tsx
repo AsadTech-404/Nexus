@@ -18,6 +18,7 @@ import { Badge } from "../../components/ui/Badge";
 import { InvestorCard } from "../../components/investor/InvestorCard";
 import { CollaborationRequestCard } from "../../components/collaboration/CollaborationRequestCard";
 import toast from "react-hot-toast";
+import { MeetingCard } from "../../components/meeting/MeetingCard";
 
 // 1. Setup an Axios instance withCredentials if not already done globally
 const api = axios.create({
@@ -35,6 +36,7 @@ export const EntrepreneurDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Fetch dashboard data
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
@@ -78,10 +80,12 @@ export const EntrepreneurDashboard: React.FC = () => {
     );
   }
 
+  // Filter pending requests
   const pendingRequests = collaborationRequests.filter(
     (request) => request.status === "pending",
   );
 
+  // Handle request status update
   const handleRequestStatusUpdate = async (requestId: string, status: string) => {
     try {
       await api.put(`/collab/${requestId}/update-status`, { status });
@@ -95,6 +99,16 @@ export const EntrepreneurDashboard: React.FC = () => {
       toast.error("Failed to update request status");
     }
   }
+
+  // Handle meeting status update
+  const handleMeetingStatusUpdate = (meetingId: string, status: string) => {
+  setStats((prevStats: any) => ({
+    ...prevStats,
+    meetings: prevStats.meetings.map((meeting: any) =>
+      meeting._id === meetingId ? { ...meeting, status } : meeting
+    ),
+  }));
+};
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -188,32 +202,29 @@ export const EntrepreneurDashboard: React.FC = () => {
                 Upcoming Meetings
               </h2>
               <Badge variant="primary">
-                {stats?.meetings?.length || 0} scheduled
+                {stats?.meetings?.length || 0} pending
               </Badge>
             </CardHeader>
             <CardBody>
-              {stats?.meetings?.length > 0 ? (
-                <div className="space-y-4">
-                  {stats.meetings.map((meeting: any) => (
-                    <div
-                      key={meeting.id}
-                      className="p-3 border rounded-lg hover:bg-gray-50 transition"
-                    >
-                      <p className="font-medium">{meeting.title}</p>
-                      <p className="text-sm text-gray-500">
-                        {new Date(meeting.scheduledTime).toLocaleString()}
-                      </p>
-                    </div>
-                  ))}
+            {stats?.meetings?.length > 0 ? (
+              <div className="space-y-4">
+                {stats.meetings.map((meeting: any) => (
+                  <MeetingCard
+                    key={meeting._id || meeting.id} 
+                    meeting={meeting} 
+                    onStatusUpdate={handleMeetingStatusUpdate}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                  <Calendar size={24} className="text-gray-500" />
                 </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 italic">
-                    No meetings scheduled this week.
-                  </p>
-                </div>
-              )}
-            </CardBody>
+                <p className="text-gray-600">No meetings scheduled this week.</p>
+              </div>
+            )}
+          </CardBody>
           </Card>
            <Card>
             <CardHeader className="flex justify-between items-center">

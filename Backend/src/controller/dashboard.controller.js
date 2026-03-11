@@ -31,18 +31,19 @@ export const getDashboardSummary = async (req, res) => {
             // Total Upcoming Meetings Count
             Meeting.countDocuments({
                 $or: [{ investorId: userId }, { entrepreneurId: userId }],
-                scheduledTime: { $gte: new Date() },
-                status: "accepted"
+                scheduledTime: { $gte: new Date().toISOString() },
+                status: { $in: ["pending", "accepted"] }
             }),
 
             // Actual Meeting Data (Limit 5)
             Meeting.find({
                 $or: [{ investorId: userId }, { entrepreneurId: userId }],
-                scheduledTime: { $gte: new Date() },
-                status: "accepted"
+                scheduledTime: { $gte: new Date().toISOString() },
+                status: { $in: ["pending", "accepted"] }
             })
             .sort({ scheduledTime: 1 })
             .limit(5)
+            .populate("investorId", "name avatarUrl isOnline") 
             .lean()
         ]);
 
