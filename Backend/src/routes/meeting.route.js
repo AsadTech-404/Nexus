@@ -11,7 +11,7 @@ meetingRoute.get("/", (req, res) => {
 
 meetingRoute.get("/all-meetings", authenticate, getMeetings);
 meetingRoute.post("/schedule", authenticate, scheduleMeeting);
-meetingRoute.put("/:id/update-status", authenticate, updateMeetingStatus);
+meetingRoute.patch("/:id/update-status", authenticate, updateMeetingStatus);
 meetingRoute.get("/:id", authenticate, getMeetingById);
 
 export default meetingRoute;

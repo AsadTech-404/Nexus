@@ -93,13 +93,19 @@ export interface Meeting {
 export interface Notification {
   id: string,
   userId: string,
-  type: "messae" | "collaboration-request" | "collaboration-accepted" | "collaboration-rejected" | "meeting-scheduled" | "meeting-status";
+  senderId: {
+    id: string,
+    name: string,
+    avatarUrl: string,
+  }
+  type: "message" | "collaboration-request" | "collaboration-accepted" | "collaboration-rejected" | "meeting-scheduled" | "meeting-status";
   title: string;
   message: string;
   link: string;
   isRead: boolean;
   createdAt: string;
 }
+
 
 export interface AuthContextType {
   user: User | null;
@@ -108,6 +114,7 @@ export interface AuthContextType {
   logout: () => void;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (token: string, newPassword: string) => Promise<void>;
+  updatePassword: (oldPassword: string, newPassword: string) => Promise<void>;
   updateProfile: (userId: string, updates: Partial<User>) => Promise<void>;
   isAuthenticated: boolean;
   isLoading: boolean;

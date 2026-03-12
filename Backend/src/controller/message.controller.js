@@ -100,6 +100,7 @@ export const sendMessage = async (req, res) => {
 
         const notification = new Notification({
             userId: receiverId,
+            senderId,
             type: "message",
             title: `New message from ${sender.name}`,
             message: `You have a new message from ${sender.name}`,

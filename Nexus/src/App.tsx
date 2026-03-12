@@ -30,9 +30,11 @@ import { DealsPage } from './pages/deals/DealsPage';
 import { ChatPage } from './pages/chat/ChatPage';
 import { Toaster } from 'react-hot-toast';
 import MeetingsPage from './pages/meeting/MeetingsPage';
+import { ThemeProvider } from './context/ThemeContext';
 
 function App() {
   return (
+    <ThemeProvider>
     <AuthProvider>
       <Toaster position="top-right" reverseOrder={false} />
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -104,6 +106,7 @@ function App() {
         </Routes>
       </Router>
     </AuthProvider>
+    </ThemeProvider>
   );
 }
 

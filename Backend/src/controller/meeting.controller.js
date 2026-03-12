@@ -39,10 +39,10 @@ export const scheduleMeeting = async (req, res) => {
 
     const currUserId = req.user._id.toString();
 
-    if (currUserId !== String(investorId) && currUserId !== String(entrepreneurId)) {
+    if (currUserId !== String(investorId)) {
       return res
         .status(403)
-        .json({ success: false, message: "Unauthorized participant" });
+        .json({ success: false, message: "Only investor can schedule meeting" });
     }
 
     // Conflict detection
@@ -75,6 +75,7 @@ export const scheduleMeeting = async (req, res) => {
     const notification = new Notification({
       id: new mongoose.Types.ObjectId(),
       userId: entrepreneurId === currUserId ? investorId : entrepreneurId,
+      senderId: req.user._id,
       type: "meeting-scheduled",
       title: `You have a new meeting scheduled`,
       message: `${req.user.name} has scheduled a meeting with you.`,
@@ -104,7 +105,7 @@ export const updateMeetingStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
-    const userId = req.user.id;
+    const userId = req.user._id;
 
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
@@ -128,7 +129,7 @@ export const updateMeetingStatus = async (req, res) => {
         .json({ success: false, message: "Meeting not found" });
     }
 
-    if (meeting.investorId !== userId && meeting.entrepreneurId !== userId) {
+    if (meeting.entrepreneurId !== userId) {
       return res
         .status(403)
         .json({
@@ -139,13 +140,15 @@ export const updateMeetingStatus = async (req, res) => {
     meeting.status = status;
     await meeting.save();
 
+    const recipientId = meeting.investorId.toString() === userId.toString() 
+      ? meeting.entrepreneurId 
+      : meeting.investorId;
+
     // Create other user notification
     const notification = new Notification({
       id: new mongoose.Types.ObjectId(),
-      userId:
-        meeting.investorId === userId
-          ? meeting.entrepreneurId
-          : meeting.investorId,
+      userId: recipientId,
+      senderId: req.user._id,
       type: "meeting-status",
       title: `Your meeting has been ${status}`,
       message: `${req.user.name} has ${status} your meeting.`,

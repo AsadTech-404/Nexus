@@ -5,11 +5,13 @@ import Notification from './../models/notification.model.js';
 export const getNotifications = async (req, res) => {
     try {
         const userId = req.user.id;
+        const senderId = req.user._id;
+
         if(!userId) {
             return res.status(401).json({ success: false, message: "Unauthorized" });
         }
 
-        const notifications = await Notification.find({ userId }).sort({ createdAt: -1 });
+        const notifications = await Notification.find({ userId, senderId }).populate("senderId", "name avatarUrl").sort({ createdAt: -1 });
         return res.status(200).json({ success: true, notifications });
     } catch (error) {
         console.error(error);

@@ -6,6 +6,11 @@ const notifictionSchema = new mongoose.Schema({
         ref: "User",
         required: true
     },
+    senderId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
     type: {
         type: String,
         enum: [

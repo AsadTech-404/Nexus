@@ -10,8 +10,8 @@ authRoute.get("/", (req, res) => {
     res.json({ message: "Auth route is working!" });
 });
 
-authRoute.post("/register", registerValidationRules, register);
-authRoute.post("/login", loginValidationRules, login);
+authRoute.post("/register", register);
+authRoute.post("/login", login);
 authRoute.post('/logout', authenticate, logout);
 authRoute.post('/forgot-password', forgotPassword);
 authRoute.post('/reset-password', resetPassword);

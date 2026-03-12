@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import DatePicker from 'react-datepicker';
 import { MapPin, X, Loader2 } from 'lucide-react';
 import "react-datepicker/dist/react-datepicker.css";
 import toast from 'react-hot-toast';
 import { Button } from '../../components/ui/Button';
 import axios from 'axios';
+import { useAuth } from '../../context/AuthContext';
 
 interface ScheduleMeetingModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ interface ScheduleMeetingModalProps {
 export const ScheduleMeetingModal: React.FC<ScheduleMeetingModalProps> = ({ 
   isOpen, onClose, investorId, entrepreneurId 
 }) => {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -25,7 +27,17 @@ export const ScheduleMeetingModal: React.FC<ScheduleMeetingModalProps> = ({
     endTime: new Date(new Date().getTime() + 30 * 60000), // Default 30 mins
   });
 
-  if (!isOpen) return null;
+  // if (!isOpen) return null;
+
+  useEffect(() => {
+    if (isOpen && user?.role !== "investor") {
+      toast.error("Only investors can schedule meetings.");
+      onClose(); // Automatically close the modal
+    }
+  }, [isOpen, user?.role, onClose]);
+
+  // If not open or not an investor, return null (renders nothing)
+  if (!isOpen || user?.role !== "investor") return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
