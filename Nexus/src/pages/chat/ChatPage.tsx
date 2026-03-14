@@ -9,12 +9,18 @@ import { ChatUserList } from "../../components/chat/ChatUserList";
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
+import { VideoCallOverlay } from "../../components/videoCall/VideoCallOverlay";
+import { io } from "socket.io-client";
+
 
 // Ensure this matches your messageRoute setup
 const api = axios.create({
   baseURL: "http://localhost:8000/api",
   withCredentials: true,
 });
+
+const socket = io("http://localhost:8000");
+
 
 export const ChatPage: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -28,6 +34,31 @@ export const ChatPage: React.FC = () => {
 
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
+
+  const [isCalling, setIsCalling] = useState(false);
+  const [incomingCall, setIncomingCall] = useState<any>(null);
+
+  // Listen for incoming call signals from the backend
+  useEffect(() => {
+    socket.on('signal', (data) => {
+      // If a signal arrives and we are not currently the one calling out
+      if (!isCalling && data.from) {
+        setIncomingCall(data);
+        setIsCalling(true); // Automatically show the video UI
+        
+        // Ensure the chat partner is set to the caller if not already
+        if (!chatPartner || chatPartner.id !== data.from) {
+            // Ideally, you'd find the user from the conversations list here
+            const caller = conversations.find(c => c.otherUser.id === data.from)?.otherUser;
+            if(caller) setChatPartner(caller);
+        }
+      }
+    });
+
+    return () => {
+      socket.off('signal');
+    };
+  }, [isCalling, chatPartner, conversations]);
 
   // Fetch Conversations for Sidebar
   useEffect(() => {
@@ -185,7 +216,7 @@ export const ChatPage: React.FC = () => {
                 <Button variant="ghost" size="sm" className="rounded-full p-2">
                   <Phone size={18} />
                 </Button>
-                <Button variant="ghost" size="sm" className="rounded-full p-2">
+                <Button variant="ghost" size="sm" className="rounded-full p-2" onClick={() => setIsCalling(true)}>
                   <Video size={18} />
                 </Button>
                 <Button variant="ghost" size="sm" className="rounded-full p-2">
@@ -269,6 +300,17 @@ export const ChatPage: React.FC = () => {
           </div>
         )}
       </div>
+      {/* Video Call Overlay Integration */}
+      {isCalling && chatPartner && (
+        <VideoCallOverlay 
+          partner={chatPartner} 
+          incomingSignal={incomingCall} // Pass the incoming signal down
+          onEnd={() => {
+            setIsCalling(false)
+            setIncomingCall(null) // Reset when call ends
+          }} 
+        />
+      )}
     </div>
   );
 };

@@ -10,6 +10,7 @@ import notificationRoute from "./routes/notification.route.js";
 import meetingRoute from './routes/meeting.route.js';
 import messageRoute from "./routes/message.route.js";
 
+
 const app = express();
 
 app.use(cors(
